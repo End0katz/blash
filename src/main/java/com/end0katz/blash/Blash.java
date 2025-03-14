@@ -1,6 +1,7 @@
 package com.end0katz.blash;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.terminal.*;
@@ -14,6 +15,8 @@ public final class Blash {
 
     public BlashConfig bc;
     public BlashContext brc;
+
+    public Path cwd;
 
     public void lanternaSetup() throws IOException {
         DefaultTerminalFactory factory = new DefaultTerminalFactory();
@@ -30,6 +33,10 @@ public final class Blash {
         print("\n");
     }
 
+    public void println() throws IOException {
+        println("");
+    }
+
     public void print(String s) throws IOException {
         for (char c : s.toCharArray()) {
             term.putCharacter(c);
@@ -38,13 +45,21 @@ public final class Blash {
 
     public void printCommandPrompt() throws IOException {
         term.setBackgroundColor(TextColor.ANSI.CYAN_BRIGHT);
-        print(System.getProperty("user.name"));
+        print(brc.username());
+        term.setBackgroundColor(TextColor.ANSI.RED);
+        println(
+                cwd.startsWith(brc.userHome())
+                ? "~" + cwd.toString()
+                : cwd.toAbsolutePath().toString()
+        );
     }
 
     public Blash(BlashConfig bc, BlashContext brc) {
 
         this.bc = bc;
         this.brc = brc;
+
+        this.cwd = bc.initialCWD();
 
         try {
             lanternaSetup();
