@@ -53,7 +53,7 @@ public final class Blash {
         term.setForegroundColor(TextColor.ANSI.RED_BRIGHT);
         print(
                 cwd.startsWith(brc.userHome())
-                ? "~" + cwd.toString()
+                ? "~" + cwd.toString().substring(brc.userHome().toString().length())
                 : cwd.toAbsolutePath().toString()
         );
         term.setForegroundColor(TextColor.ANSI.WHITE);
@@ -63,6 +63,12 @@ public final class Blash {
         term.resetColorAndSGR();
 
         term.flush();
+    }
+
+    public String getCommand() throws IOException {
+        printCommandPrompt();
+        println();
+        return "printf \"\\033[1;31mINTERNAL BLASH ERROR\\033[m\\n\"";
     }
 
     public Blash(BlashConfig bc, BlashContext brc) {
@@ -83,9 +89,4 @@ public final class Blash {
         }
     }
 
-    public String getCommand() throws IOException {
-        printCommandPrompt();
-        println();
-        return "printf \"\\033[1;31mINTERNAL BLASH ERROR\\033[m\\n\"";
-    }
 }

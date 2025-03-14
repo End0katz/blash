@@ -28,7 +28,7 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        if (new String(sudoP.getInputStream().readAllBytes()).equals("0")) {
+        if (new String(sudoP.getInputStream().readAllBytes()).equals("0\n")) {
             brc.sudo();
         }
 
@@ -41,6 +41,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         generateParserAndAddArguments();
+        System.out.println(getBlashContext().root());
 
         Blash blash = new Blash(getBlashConf(), getBlashContext());
         System.out.println(blash.getCommand());
