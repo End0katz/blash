@@ -43,7 +43,7 @@ public class Main {
         generateParserAndAddArguments();
 
         Blash blash = new Blash(getBlashConf(), getBlashContext());
-        blash.getCommand();
+        System.out.println(blash.getCommand());
     }
 
 }
