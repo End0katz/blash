@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import com.googlecode.lanterna.*;
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.*;
 
 /**
@@ -65,10 +67,122 @@ public final class Blash {
         term.flush();
     }
 
+    public String input() throws IOException {
+        String result = "";
+        TerminalPosition start = term.getCursorPosition();
+        int index = 0;
+
+        while (!result.endsWith("\n")) {
+            term.setCursorPosition(start);
+            print(result);
+            term.setCursorPosition(start.withRelativeColumn(index));
+
+            KeyStroke ks = term.readInput();
+
+            switch (ks.getKeyType()) {
+                case KeyType.Character -> {
+                    result = result.substring(0, index)
+                            + ks.getCharacter()
+                            + result.substring(index);
+                    index++;
+                }
+
+                case KeyType.ArrowLeft -> {
+                    if (index > 0) {
+                        index--;
+                    }
+                }
+                case KeyType.ArrowRight -> {
+                    if (index < result.length()) {
+                        index++;
+                    }
+                }
+                // TODO implement history
+
+                case KeyType.Backspace -> {
+                    if (index > 0) {
+                        term.setCursorPosition(start);
+                        print(" ".repeat(result.length()));
+
+                        result = result.substring(0, index - 1)
+                                + result.substring(index);
+                        index--;
+                    }
+                }
+
+                case KeyType.Delete -> {
+                    if (index < result.length()) {
+                        term.setCursorPosition(start);
+                        print(" ".repeat(result.length()));
+
+                        result = result.substring(0, index)
+                                + result.substring(index + 1);
+                    }
+                }
+
+                case KeyType.Home -> {
+                    index = 0;
+                }
+                case KeyType.End -> {
+                    index = result.length();
+                }
+
+                case KeyType.Tab -> {
+                    do {
+                        result = result.substring(0, index)
+                                + " "
+                                + result.substring(index);
+                        index++;
+                    } while (index % bc.tabSize() > 0);
+                }
+                case KeyType.ReverseTab -> {
+                    int initialParity = result.length() % bc.tabSize();
+
+                    do {
+                        result = result.substring(0, index)
+                                + " "
+                                + result.substring(index);
+                    } while (result.length() % bc.tabSize() != initialParity);
+                }
+
+                case KeyType.Enter -> {
+                    return result;
+                }
+
+                case KeyType.Escape -> {
+
+                }
+
+                case KeyType.Insert -> {
+
+                }
+
+                case KeyType.PageDown -> {
+                    index = Math.min(
+                            index + term.getTerminalSize().getRows(),
+                            result.length());
+                }
+                case KeyType.PageUp -> {
+                    index = Math.max(
+                            index - term.getTerminalSize().getRows(),
+                            0
+                    );
+                }
+
+                default -> {
+                }
+            }
+        }
+        return result;
+    }
+
     public String getCommand() throws IOException {
+        String cmd; // = "printf \"\\033[1;31mINTERNAL BLASH ERROR\\033[m\\n\"";
         printCommandPrompt();
+        cmd = input();
         println();
-        return "printf \"\\033[1;31mINTERNAL BLASH ERROR\\033[m\\n\"";
+
+        return cmd;
     }
 
     public Blash(BlashConfig bc, BlashContext brc) {
